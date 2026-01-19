@@ -141,23 +141,56 @@ class BusTimingApp {
         this.elements.apiKeyModal.classList.add('hidden');
     }
 
-    saveApiKey() {
+    async saveApiKey() {
         const key = this.elements.apiKeyInput.value.trim();
         if (!key) {
             alert('Please enter an API key');
             return;
         }
 
-        LTA_API.setApiKey(key);
-        this.hideApiKeyModal();
-
-        // Refresh if we have a current search
-        if (this.state.currentBusStop) {
-            this.searchBusStop();
+        // Basic format check (UUID is 36 chars)
+        if (key.length !== 36) {
+            if (!confirm(`The key length is ${key.length} characters. LTA DataMall keys are usually 36 characters (UUID format). Are you sure you want to save?`)) {
+                return;
+            }
         }
 
-        // Also refresh favorites
-        this.refreshFavoriteTimings();
+        const originalText = this.elements.saveApiKeyBtn.textContent;
+        this.elements.saveApiKeyBtn.textContent = 'Verifying...';
+        this.elements.saveApiKeyBtn.disabled = true;
+
+        // Temporarily set key to test
+        const oldKey = LTA_API.getApiKey();
+        LTA_API.setApiKey(key);
+
+        try {
+            // Test with a common bus stop (e.g., VivoCity: 14141 or similar, using 83139 from placeholder)
+            const data = await LTA_API.getBusArrival('83139');
+
+            if (data._isDemo) {
+                // Key failed
+                LTA_API.setApiKey(oldKey); // Revert
+                alert('Verification Failed: The API key seems invalid (Server returned Demo data). Please check your key.');
+            } else {
+                // Success
+                this.hideApiKeyModal();
+                alert('Success! API key verified and saved.');
+
+                // Refresh if we have a current search
+                if (this.state.currentBusStop) {
+                    this.searchBusStop();
+                }
+                // Also refresh favorites
+                this.refreshFavoriteTimings();
+            }
+        } catch (err) {
+            console.error(err);
+            LTA_API.setApiKey(oldKey); // Revert
+            alert('Error verifying key. Please check your internet connection.');
+        } finally {
+            this.elements.saveApiKeyBtn.textContent = originalText;
+            this.elements.saveApiKeyBtn.disabled = false;
+        }
     }
 
     clearApiKey() {

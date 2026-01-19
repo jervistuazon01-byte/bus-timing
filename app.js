@@ -186,7 +186,13 @@ class BusTimingApp {
         } catch (err) {
             console.error(err);
             LTA_API.setApiKey(oldKey); // Revert
-            alert('Error verifying key. Please check your internet connection.');
+
+            if (err.message.includes('404')) {
+                alert('Server Not Found: You are likely running on GitHub Pages or the API path is incorrect.\n\nLive data requires a backend server (Node.js).');
+            } else {
+                // Show the actual error message from the server/network
+                alert(`Verification Failed: ${err.message}`);
+            }
         } finally {
             this.elements.saveApiKeyBtn.textContent = originalText;
             this.elements.saveApiKeyBtn.disabled = false;

@@ -23,10 +23,16 @@ module.exports = function handler(req, res) {
         return;
     }
 
-    const apiKey = process.env.LTA_API_KEY;
+    // 1. Try Client Header First
+    let apiKey = req.headers['accountkey'];
+
+    // 2. Fallback to Server Environment Variable
+    if (!apiKey) {
+        apiKey = process.env.LTA_API_KEY;
+    }
 
     if (!apiKey) {
-        res.status(500).json({ error: 'Server misconfiguration: API key not found' });
+        res.status(500).json({ error: 'Server misconfiguration: API key not found in request header or environment.' });
         return;
     }
 

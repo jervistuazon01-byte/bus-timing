@@ -65,13 +65,29 @@ const LTA_API = {
             });
 
             if (!response.ok) {
-                throw new Error(`API Error: ${response.status}`);
+                let errorMsg = `API Error: ${response.status}`;
+                try {
+                    const errorData = await response.json();
+                    if (errorData && errorData.error) {
+                        errorMsg = errorData.error;
+                    } else if (typeof errorData === 'string') {
+                        errorMsg = errorData;
+                    }
+                } catch (e) {
+                    // Could not parse JSON, try text
+                    try {
+                        const text = await response.text();
+                        if (text) errorMsg = `Server Error: ${text}`;
+                    } catch (ex) { /* ignore */ }
+                }
+                throw new Error(errorMsg);
             }
 
             return await response.json();
         } catch (error) {
             console.error('API Request failed:', error);
-            throw new Error('Failed to fetch bus timings. Please check your connection.');
+            // Re-throw so app.js can handle it
+            throw error;
         }
     },
 

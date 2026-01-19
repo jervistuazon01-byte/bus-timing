@@ -1,0 +1,850 @@
+/* ========================================
+   SG Bus Timing - Polished Minimalist UI
+   ======================================== */
+
+:root {
+    /* Remind.me Inspired Dark Theme */
+    --bg-primary: #18181B;
+    /* Very dark zinc/slate */
+    --bg-secondary: #27272A;
+    /* Card bg */
+    --bg-tertiary: #3F3F46;
+    /* Inputs/Hover */
+    --text-primary: #FAFAFA;
+    --text-secondary: #A1A1AA;
+    --text-muted: #71717A;
+    --accent: #A6ADFF;
+    /* Periwinkle */
+    --accent-dark: #818CF8;
+    /* Slightly darker periwinkle for contrast */
+    --accent-soft: rgba(166, 173, 255, 0.15);
+    --accent-secondary: #FFB48F;
+    /* Peach */
+    --success: #34D399;
+    --warning: #FBBF24;
+    --danger: #F87171;
+    --border: #3F3F46;
+    --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    --radius-lg: 24px;
+    --radius-md: 16px;
+    --radius-sm: 12px;
+}
+
+[data-theme="light"] {
+    /* Keep tokens consistent for now, mostly white-based cards */
+    --bg-primary: #f1f5f9;
+}
+
+/* Reset */
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 16px;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    min-height: 100vh;
+    min-height: 100dvh;
+    line-height: 1.5;
+}
+
+/* App Container */
+.app {
+    max-width: 428px;
+    margin: 0 auto;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-primary);
+}
+
+/* Header */
+.header {
+    background: transparent;
+    /* Minimalist dark header */
+    padding: 24px 24px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--text-primary);
+}
+
+.logo {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent);
+    /* Periwinkle Logo */
+    letter-spacing: -0.8px;
+    line-height: 1.2;
+}
+
+.header-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.header-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-primary);
+    transition: all 0.2s;
+}
+
+.header-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-1px);
+}
+
+.header-btn:active {
+    transform: scale(0.92);
+}
+
+.header-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+.theme-icon {
+    display: block;
+}
+
+.theme-icon.hidden {
+    display: none;
+}
+
+/* Main Content */
+.main {
+    flex: 1;
+    padding: 0 24px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    margin-top: 0;
+    /* Remove the negative margin since we removed the header curve */
+}
+
+/* Labels */
+.input-label,
+.section-label {
+    display: block;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    letter-spacing: -0.2px;
+}
+
+/* Inputs - Rounded Card Style */
+.search-section {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    box-shadow: var(--shadow);
+}
+
+.input {
+    width: 100%;
+    height: 52px;
+    padding: 0 16px;
+    font-size: 16px;
+    font-family: inherit;
+    font-weight: 500;
+    background: var(--bg-tertiary);
+    border: 2px solid transparent;
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    transition: all 0.2s;
+}
+
+.input:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: white;
+}
+
+.input-large {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+/* Search Container */
+.search-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 52px;
+    padding: 0 24px;
+    font-size: 16px;
+    font-weight: 700;
+    font-family: inherit;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn:active {
+    transform: scale(0.96);
+}
+
+.btn-primary {
+    background: var(--accent);
+    color: var(--bg-primary);
+    /* Dark text on bright accent for pop */
+    width: 100%;
+    font-weight: 800;
+    /* Default search button to full width per reference */
+}
+
+.btn-icon {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    background: white;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    color: var(--accent-dark);
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+}
+
+.search-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Ensure search button is at the bottom of search-section */
+.search-section .btn-primary {
+    margin-top: 8px;
+}
+
+.btn-ghost {
+    height: auto;
+    padding: 8px 12px;
+    background: transparent;
+    color: var(--accent-dark);
+    font-size: 14px;
+    opacity: 0.8;
+}
+
+.btn-ghost-sm {
+    background: transparent;
+    border: none;
+    color: var(--accent);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: var(--radius-md);
+    transition: all 0.2s;
+}
+
+.btn-ghost-sm:hover {
+    background: var(--accent-soft);
+}
+
+.btn-pill {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    background: white;
+    box-shadow: var(--shadow);
+    color: var(--accent-dark);
+    border-radius: 50%;
+}
+
+.btn-pill:hover {
+    background: var(--bg-tertiary);
+}
+
+.btn-danger {
+    background: transparent;
+    color: var(--danger);
+    border: 2px solid var(--danger);
+}
+
+/* Recent Searches */
+.recent-searches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 20px;
+    /* Add space between 'Search' button and chips */
+}
+
+.recent-chip {
+    height: 40px;
+    padding: 0 20px;
+    background: var(--bg-tertiary);
+    border: 2px solid transparent;
+    border-radius: 20px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+}
+
+.recent-chip:hover {
+    border-color: var(--accent);
+    color: var(--accent-dark);
+}
+
+/* Stop Info */
+.stop-info {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    box-shadow: var(--shadow);
+}
+
+.stop-name {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    letter-spacing: -0.5px;
+}
+
+.stop-code {
+    font-size: 14px;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+/* Services Grid */
+.services-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.service-btn {
+    height: 44px;
+    padding: 0 20px;
+    min-width: 60px;
+    background: var(--bg-secondary);
+    border: 2px solid var(--border);
+    border-radius: var(--radius-md);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.service-btn:hover {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+}
+
+.service-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+    box-shadow: 0 4px 12px rgba(134, 217, 235, 0.3);
+}
+
+/* Arrivals Section */
+.arrivals-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.selected-bus .bus-number {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--accent-dark);
+    letter-spacing: -1px;
+}
+
+.last-updated {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-top: -4px;
+    margin-bottom: 16px;
+    font-weight: 500;
+}
+
+/* Arrivals List */
+.arrivals-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.arrival-card {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(0, 0, 0, 0.02);
+    animation: fadeUp 0.3s ease-out;
+}
+
+.arrival-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.arrival-label {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: -0.2px;
+}
+
+.arrival-time {
+    font-size: 36px;
+    font-weight: 800;
+    color: var(--accent);
+    /* Make the time pop with the main accent */
+    letter-spacing: -1.5px;
+    line-height: 1;
+}
+
+.arrival-time.arriving {
+    color: var(--accent-secondary);
+    /* Peach for arriving */
+}
+
+.arrival-meta {
+    margin-top: 6px;
+}
+
+.bus-type {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+/* Crowd Indicator */
+.crowd-indicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-sm);
+    min-width: 64px;
+}
+
+.crowd-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.crowd-green {
+    background: var(--success);
+}
+
+.crowd-yellow {
+    background: var(--warning);
+}
+
+.crowd-red {
+    background: var(--danger);
+}
+
+.crowd-gray {
+    background: var(--text-muted);
+}
+
+.crowd-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    letter-spacing: -0.1px;
+}
+
+/* Loading */
+.loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 48px;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.loader {
+    width: 28px;
+    height: 28px;
+    border: 2.5px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Error */
+.error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 48px;
+    text-align: center;
+}
+
+.error-icon {
+    font-size: 32px;
+}
+
+.error-message {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+/* Modal */
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(55, 75, 79, 0.85);
+    /* Use primary color with opacity */
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 24px;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal-content {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    padding: 32px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.modal-header h2 {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+}
+
+.modal-close {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--bg-tertiary);
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.modal-close:hover {
+    background: var(--danger);
+    color: white;
+}
+
+.modal-desc {
+    color: var(--text-secondary);
+    font-size: 15px;
+    margin-bottom: 12px;
+    line-height: 1.6;
+}
+
+.modal-link {
+    display: inline-block;
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 15px;
+    margin-bottom: 24px;
+}
+
+.modal-content .input {
+    margin-bottom: 20px;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.modal-buttons .btn {
+    flex: 1;
+}
+
+/* Footer */
+.footer {
+    padding: 12px 16px;
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-muted);
+    background: var(--bg-secondary);
+}
+
+.footer a {
+    color: var(--accent);
+    text-decoration: none;
+}
+
+.auto-refresh-status {
+    margin-top: 2px;
+    font-weight: 500;
+}
+
+/* Utility */
+.hidden {
+    display: none !important;
+}
+
+/* Safe Area */
+@supports (padding-top: env(safe-area-inset-top)) {
+    .header {
+        padding-top: calc(12px + env(safe-area-inset-top));
+    }
+
+    .footer {
+        padding-bottom: calc(12px + env(safe-area-inset-bottom));
+    }
+}
+
+/* =========================================
+   Favorites
+   ========================================= */
+
+.favorites-section {
+    margin-bottom: 24px;
+    animation: slideUp 0.3s ease-out;
+    width: 100%;
+}
+
+.favorites-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+.favorite-card {
+    background: var(--bg-secondary);
+    padding: 16px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    position: relative;
+    overflow: hidden;
+    text-align: left;
+}
+
+.favorite-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent);
+}
+
+.favorite-card:active {
+    transform: scale(0.98);
+}
+
+.fav-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 4px;
+}
+
+.fav-service {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+}
+
+.fav-timing {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent-dark);
+}
+
+.fav-timing.arriving {
+    color: var(--accent-secondary);
+}
+
+.fav-stop {
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* New Favorites Layout */
+.fav-timings-group {
+    display: flex;
+    align-items: baseline;
+    gap: 0px;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent-dark);
+}
+
+.text-accent {
+    color: var(--accent);
+}
+
+.divider {
+    color: var(--text-muted);
+    font-weight: 400;
+    margin-right: 4px;
+}
+
+.min-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-left: 4px;
+}
+
+.fav-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 4px;
+}
+
+.crowd-dot-sm {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+/* Remove Button on Card */
+.remove-fav-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--bg-primary);
+    border: none;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    opacity: 0;
+    transition: all 0.2s ease;
+    z-index: 2;
+}
+
+.favorite-card:hover .remove-fav-btn {
+    opacity: 1;
+}
+
+.remove-fav-btn:hover {
+    background: var(--danger);
+    color: white;
+}
+
+/* Heart Toggle Button */
+.btn-heart {
+    background: transparent;
+    border: none;
+    padding: 8px;
+    border-radius: 50%;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-heart:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--danger);
+}
+
+.btn-heart.active {
+    color: var(--danger);
+}
+
+.btn-heart svg {
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.btn-heart:active svg {
+    transform: scale(0.8);
+}
+
+.btn-heart.active svg {
+    fill: currentColor;
+    transform: scale(1.1);
+}

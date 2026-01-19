@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#18181B">
+    <meta name="description" content="Live Singapore bus arrival times - Track your bus in real-time">
+    <title>SG Bus Timing</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon.png">
+</head>
+
+<body>
+    <div class="app">
+        <!-- Header -->
+        <header class="header">
+            <h1 class="logo">SG Bus</h1>
+            <div class="header-actions">
+                <button class="header-btn" id="settingsBtn" aria-label="Open settings">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round">
+                        <circle cx="12" cy="12" r="3" />
+                        <path
+                            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                    </svg>
+                </button>
+
+                <button class="header-btn" id="themeToggle" aria-label="Toggle theme">
+                    <svg class="theme-icon theme-icon-dark" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                    </svg>
+                    <svg class="theme-icon theme-icon-light hidden" width="18" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="12" cy="12" r="5" />
+                        <path
+                            d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42m12.72-12.72l1.42-1.42" />
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- API Key Modal removed -->
+
+
+        <!-- Main Content -->
+        <main class="main">
+            <!-- Favorites Section -->
+            <section class="favorites-section hidden" id="favoritesSection">
+                <div class="section-header">
+                    <label class="section-label">Live Favorites Dashboard</label>
+                    <button class="btn-ghost-sm" id="refreshFavBtn">Refresh All</button>
+                </div>
+                <div class="favorites-grid" id="favoritesGrid"></div>
+            </section>
+
+            <!-- Bus Stop Search -->
+            <section class="search-section">
+                <label class="input-label">Bus Stop Code</label>
+                <div class="search-container">
+                    <input type="text" id="busStopInput" class="input input-large"
+                        placeholder="Enter bus code (e.g. 83139)" inputmode="numeric" pattern="[0-9]*" maxlength="5">
+                    <button class="btn btn-primary" id="searchBtn">Search</button>
+                </div>
+                <!-- Recent Searches -->
+                <div class="recent-searches" id="recentSearches"></div>
+            </section>
+
+            <!-- Bus Stop Info -->
+            <section class="stop-info hidden" id="stopInfo">
+                <div class="stop-header">
+                    <h2 class="stop-name" id="stopName">Loading...</h2>
+                    <p class="stop-code" id="stopCode"></p>
+                </div>
+            </section>
+
+            <!-- Bus Services -->
+            <section class="services-section hidden" id="servicesSection">
+                <label class="section-label">Select Bus Service</label>
+                <div class="services-grid" id="servicesGrid"></div>
+            </section>
+
+            <!-- Arrival Times -->
+            <section class="arrivals-section hidden" id="arrivalsSection">
+                <div class="arrivals-header">
+                    <div class="selected-bus" id="selectedBus">
+                        <span class="bus-number"></span>
+                        <button class="btn-heart" id="favoriteBtn" aria-label="Favorite this bus">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path
+                                    d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z">
+                                </path>
+                            </svg>
+                        </button>
+                    </div>
+                    <button class="btn btn-pill" id="refreshBtn">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round">
+                            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                            <path d="M21 3v5h-5" />
+                            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                            <path d="M3 21v-5h5" />
+                        </svg>
+                    </button>
+                </div>
+                <p class="last-updated" id="lastUpdated"></p>
+
+                <div class="arrivals-list" id="arrivalsList"></div>
+            </section>
+
+            <!-- Loading State -->
+            <div class="loading hidden" id="loading">
+                <div class="loader"></div>
+                <p>Getting bus times...</p>
+            </div>
+
+            <!-- Error State -->
+            <div class="error hidden" id="error">
+                <span class="error-icon">⚠️</span>
+                <p class="error-message" id="errorMessage"></p>
+                <button class="btn btn-ghost" id="retryBtn">Try Again</button>
+            </div>
+        </main>
+
+        <!-- API Key Modal -->
+        <div class="modal hidden" id="apiKeyModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Setup API Key</h2>
+                    <button class="modal-close" id="closeApiModal">✕</button>
+                </div>
+                <p class="modal-desc">To get real-time bus data, you need an LTA DataMall API Key. It's free and takes 1
+                    minute.</p>
+                <a href="https://datamall.lta.gov.sg/content/datamall/en/request-for-api.html" target="_blank"
+                    class="modal-link">Get your free key →</a>
+
+                <label class="input-label">Account Key</label>
+                <input type="password" id="apiKeyInput" class="input" placeholder="Paste your API key here">
+
+                <div class="modal-buttons">
+                    <button class="btn btn-ghost" id="clearApiKey">Clear</button>
+                    <button class="btn btn-primary" id="saveApiKey">Save Key</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Data from <a href="https://datamall.lta.gov.sg" target="_blank">LTA DataMall</a></p>
+            <p class="auto-refresh-status" id="autoRefreshStatus">Auto-refresh: ON</p>
+        </footer>
+    </div>
+
+    <script src="api.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>

@@ -63,9 +63,20 @@
             <section class="search-section">
                 <label class="input-label">Bus Stop Code</label>
                 <div class="search-container">
-                    <input type="text" id="busStopInput" class="input input-large"
-                        placeholder="Enter bus code (e.g. 83139)" inputmode="numeric" pattern="[0-9]*" maxlength="5">
+                    <div class="search-input-group">
+                        <input type="text" id="busStopInput" class="input input-large"
+                            placeholder="Bus stop code or name..." autocomplete="off">
+                        <button class="btn-icon" id="nearbyBtn" aria-label="Find nearby stops">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
+                            </svg>
+                        </button>
+                    </div>
                     <button class="btn btn-primary" id="searchBtn">Search</button>
+
+                    <!-- Dropdown Results -->
+                    <div id="searchResults" class="search-results hidden"></div>
                 </div>
                 <!-- Recent Searches -->
                 <div class="recent-searches" id="recentSearches"></div>

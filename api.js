@@ -242,6 +242,10 @@ const LTA_API = {
      * Get bus type description
      * SD = Single Deck, DD = Double Deck, BD = Bendy
      */
+    /**
+     * Get bus type description
+     * SD = Single Deck, DD = Double Deck, BD = Bendy
+     */
     getBusType(type) {
         switch (type) {
             case 'SD':
@@ -253,6 +257,117 @@ const LTA_API = {
             default:
                 return type || 'Unknown';
         }
+    },
+
+    // ===========================================
+    // New Feature: Bus Stops Data (Search/Geo)
+    // ===========================================
+
+    /**
+     * Fetch all bus stops and cache them
+     */
+    async getAllStops() {
+        const CACHE_KEY = 'sg_bus_stops_cache';
+        const CACHE_TIME_KEY = 'sg_bus_stops_time';
+        const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
+
+        // Check cache
+        const cached = localStorage.getItem(CACHE_KEY);
+        const cacheTime = localStorage.getItem(CACHE_TIME_KEY);
+
+        if (cached && cacheTime && (Date.now() - parseInt(cacheTime) < CACHE_DURATION)) {
+            // Return cached data
+            return JSON.parse(cached);
+        }
+
+        console.log('Fetching all bus stops from server...');
+        let allStops = [];
+        let skip = 0;
+        let hasMore = true;
+
+        // Loop to fetch all pages (500 per page)
+        while (hasMore) {
+            try {
+                // Call our server proxy which handles the authentication
+                const data = await this.request('/v3/BusStops', { skip }); // Map to /api/bus-stops on server via request method adaptation needed or direct fetch? 
+
+                // Wait, our request() method hardcodes /api/bus-arrival. 
+                // We need to bypass or modify request() slightly, but for now let's use direct fetch to our new endpoint
+                // Actually, let's fix request() later? No, let's just do a direct fetch here to be safe and simple
+
+                // Calls local server endpoint
+                let response = await fetch(`/api/bus-stops?skip=${skip}`, {
+                    headers: { 'AccountKey': this.getApiKey() || '' }
+                });
+
+                let pageData = await response.json();
+
+                if (pageData.value && pageData.value.length > 0) {
+                    allStops = [...allStops, ...pageData.value];
+                    skip += 500;
+                    console.log(`Fetched ${allStops.length} stops...`);
+                } else {
+                    hasMore = false;
+                }
+            } catch (err) {
+                console.error('Error fetching stops:', err);
+                hasMore = false;
+            }
+        }
+
+        if (allStops.length > 0) {
+            // Save to cache
+            try {
+                localStorage.setItem(CACHE_KEY, JSON.stringify(allStops));
+                localStorage.setItem(CACHE_TIME_KEY, Date.now().toString());
+                console.log('Bus stops cached successfully.');
+            } catch (e) {
+                console.warn('Failed to cache stops (probably quota exceeded):', e);
+            }
+        }
+
+        return allStops;
+    },
+
+    /**
+     * Search bus stops by code, road, or description
+     */
+    async searchStops(query) {
+        if (!query || query.length < 2) return [];
+
+        const stops = await this.getAllStops();
+        const lowerQuery = query.toLowerCase();
+
+        return stops.filter(stop =>
+            stop.BusStopCode.includes(query) ||
+            stop.Description.toLowerCase().includes(lowerQuery) ||
+            stop.RoadName.toLowerCase().includes(lowerQuery)
+        ).slice(0, 20); // Limit results
+    },
+
+    /**
+     * Get nearby stops based on coordinates
+     */
+    async getNearbyStops(lat, lon) {
+        const stops = await this.getAllStops();
+
+        // Simple distance calculation (Haversine not strictly needed for short distances, but good to be accurate)
+        // We'll use simple pythagoras on lat/lon for speed as Singapore is small/near equator.
+        // 1 deg lat ~ 111km. 1 deg lon at equator ~ 111km.
+
+        return stops.map(stop => {
+            const dLat = (stop.Latitude - lat);
+            const dLon = (stop.Longitude - lon);
+            const distSq = dLat * dLat + dLon * dLon;
+            return { ...stop, distSq };
+        })
+            .sort((a, b) => a.distSq - b.distSq)
+            .slice(0, 10) // Get closest 10
+            .map(s => {
+                // Convert to approx meters
+                const distKm = Math.sqrt(s.distSq) * 111;
+                return { ...s, distance: Math.round(distKm * 1000) };
+            });
     }
 };
 

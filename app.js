@@ -28,6 +28,8 @@ class BusTimingApp {
             // Search
             busStopInput: document.getElementById('busStopInput'),
             searchBtn: document.getElementById('searchBtn'),
+            nearbyBtn: document.getElementById('nearbyBtn'),
+            searchResults: document.getElementById('searchResults'),
             recentSearches: document.getElementById('recentSearches'),
 
             // Stop Info
@@ -61,7 +63,8 @@ class BusTimingApp {
             services: [],
             autoRefreshInterval: null,
             favorites: [], // Array of { stopCode, serviceNo }
-            theme: localStorage.getItem('theme') || 'dark'
+            theme: localStorage.getItem('theme') || 'dark',
+            searchDebounce: null
         };
 
         // Initialize
@@ -72,9 +75,8 @@ class BusTimingApp {
         // Apply saved theme
         this.applyTheme(this.state.theme);
 
-        // Check for API key - No longer needed as server handles it
-        // if (!LTA_API.hasApiKey()) { ... }
-
+        // Pre-fetch bus stops (background)
+        setTimeout(() => LTA_API.getAllStops(), 1000);
 
         // Load recent searches
         this.loadRecentSearches();
@@ -106,8 +108,24 @@ class BusTimingApp {
 
         // Search
         this.elements.searchBtn.addEventListener('click', () => this.searchBusStop());
+
         this.elements.busStopInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') this.searchBusStop();
+        });
+
+        // Live Search Input
+        this.elements.busStopInput.addEventListener('input', (e) => this.handleSearchInput(e.target.value));
+
+        // Location Search
+        this.elements.nearbyBtn.addEventListener('click', () => this.handleLocationSearch());
+
+        // Close search results on click outside
+        document.addEventListener('click', (e) => {
+            if (!this.elements.searchContainer?.contains(e.target)) { // note: need to add searchContainer to elements if used, or just check input/results
+                if (!this.elements.busStopInput.contains(e.target) && !this.elements.searchResults.contains(e.target)) {
+                    this.elements.searchResults.classList.add('hidden');
+                }
+            }
         });
 
         // Refresh
@@ -213,6 +231,96 @@ class BusTimingApp {
         }
     }
 
+
+    // ========================================
+    // Enhanced Search & Geolocation
+    // ========================================
+
+    async handleSearchInput(query) {
+        // Clear previous debounce
+        if (this.state.searchDebounce) {
+            clearTimeout(this.state.searchDebounce);
+        }
+
+        // Hide results if empty
+        if (!query || query.length < 2) {
+            this.elements.searchResults.classList.add('hidden');
+            return;
+        }
+
+        // Debounce search (300ms)
+        this.state.searchDebounce = setTimeout(async () => {
+            const results = await LTA_API.searchStops(query);
+            this.renderSearchResults(results);
+        }, 300);
+    }
+
+    async handleLocationSearch() {
+        if (!navigator.geolocation) {
+            alert('Geolocation is not supported by your browser');
+            return;
+        }
+
+        this.elements.nearbyBtn.innerHTML = '<svg class="spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>';
+
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                try {
+                    const { latitude, longitude } = position.coords;
+                    const results = await LTA_API.getNearbyStops(latitude, longitude);
+                    this.renderSearchResults(results);
+
+                    // Restore icon
+                    this.elements.nearbyBtn.innerHTML = `
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
+                        </svg>`;
+                } catch (err) {
+                    console.error(err);
+                    alert('Failed to find nearby stops');
+                }
+            },
+            (err) => {
+                console.error(err);
+                alert('Location permission denied or unavailable');
+                this.elements.nearbyBtn.innerHTML = `
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                         <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
+                    </svg>`;
+            }
+        );
+    }
+
+    renderSearchResults(results) {
+        if (results.length === 0) {
+            this.elements.searchResults.innerHTML = '<div class="search-result-item"><span class="result-name">No stops found</span></div>';
+        } else {
+            this.elements.searchResults.innerHTML = results.map(stop => `
+                <div class="search-result-item" data-code="${stop.BusStopCode}">
+                    <span class="result-name">${stop.Description}</span>
+                    <div class="result-meta">
+                        <span class="result-code">${stop.BusStopCode}</span>
+                        <span class="result-road">${stop.RoadName}</span>
+                        ${stop.distance ? `<span class="result-dist">${stop.distance < 1000 ? stop.distance + 'm' : (stop.distance / 1000).toFixed(1) + 'km'}</span>` : ''}
+                    </div>
+                </div>
+            `).join('');
+
+            // Add click handlers
+            this.elements.searchResults.querySelectorAll('.search-result-item').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    const code = item.dataset.code;
+                    if (code) {
+                        this.elements.busStopInput.value = code;
+                        this.elements.searchResults.classList.add('hidden');
+                        this.searchBusStop();
+                    }
+                });
+            });
+        }
+
+        this.elements.searchResults.classList.remove('hidden');
+    }
 
     // ========================================
     // Theme Management

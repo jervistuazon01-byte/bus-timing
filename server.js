@@ -153,6 +153,74 @@ const server = http.createServer((req, res) => {
         return;
     }
 
+    // Handle Bus Stops API proxy (for search/geo)
+    if (pathname === '/api/bus-stops') {
+        console.log('  -> Handling bus stops API request');
+
+        // Check for client-provided API key in headers FIRST
+        let apiKey = req.headers['accountkey'];
+
+        if (!apiKey) {
+            // Fall back to environment or .env file
+            apiKey = process.env.LTA_API_KEY;
+
+            // Simple manual .env parser if not in process.env
+            if (!apiKey && fs.existsSync('.env')) {
+                try {
+                    const envFile = fs.readFileSync('.env', 'utf8');
+                    const match = envFile.match(/LTA_API_KEY=(.*)/);
+                    if (match && match[1]) {
+                        apiKey = match[1].trim();
+                    }
+                } catch (e) {
+                    console.error('Error reading .env file:', e);
+                }
+            }
+        }
+
+        if (!apiKey) {
+            res.writeHead(500, {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            });
+            res.end(JSON.stringify({ error: 'Server misconfiguration: LTA_API_KEY not found' }));
+            return;
+        }
+
+        const skip = params.skip || 0;
+        const ltaUrl = `https://datamall2.mytransport.sg/ltaodataservice/v3/BusStops?$skip=${skip}`;
+
+        console.log(`  -> Calling LTA API: ${ltaUrl}`);
+
+        const ltaReq = https.request(ltaUrl, {
+            method: 'GET',
+            headers: {
+                'AccountKey': apiKey,
+                'Accept': 'application/json',
+                'User-Agent': 'Mozilla/5.0'
+            }
+        }, (ltaRes) => {
+            let data = '';
+            ltaRes.on('data', chunk => data += chunk);
+            ltaRes.on('end', () => {
+                res.writeHead(ltaRes.statusCode, {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                });
+                res.end(data);
+            });
+        });
+
+        ltaReq.on('error', (error) => {
+            console.log(`  -> LTA API error: ${error.message}`);
+            res.writeHead(500, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+            res.end(JSON.stringify({ error: error.message }));
+        });
+
+        ltaReq.end();
+        return;
+    }
+
     // Serve static files
     let filePath = pathname === '/' ? '/index.html' : pathname;
     filePath = path.join(__dirname, filePath);

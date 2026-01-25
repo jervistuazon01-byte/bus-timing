@@ -1,0 +1,15 @@
+{
+    "name": "SG Bus Timing",
+    "short_name": "SG Bus",
+    "start_url": "./index.html",
+    "display": "standalone",
+    "background_color": "#374B4F",
+    "theme_color": "#374B4F",
+    "icons": [
+        {
+            "src": "icon.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

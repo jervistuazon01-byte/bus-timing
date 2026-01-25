@@ -862,7 +862,7 @@ class BusTimingApp {
 // Initialize app when DOM is ready
 // Initialize app when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('SG Bus App v2.0 Loaded'); // Version Check
+    console.log('SG Bus App v3.0 Loaded'); // Version Check
     window.app = new BusTimingApp();
 
 

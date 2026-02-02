@@ -228,7 +228,7 @@ const server = http.createServer((req, res) => {
     const ext = path.extname(filePath);
     const contentType = mimeTypes[ext] || 'text/plain';
 
-    fs.readFile(filePath, (err, content) => {
+    fs.stat(filePath, (err, stats) => {
         if (err) {
             if (err.code === 'ENOENT') {
                 console.log(`  -> 404 Not Found: ${filePath}`);
@@ -239,8 +239,36 @@ const server = http.createServer((req, res) => {
                 res.end(`Server Error: ${err.code}`);
             }
         } else {
-            res.writeHead(200, { 'Content-Type': contentType });
-            res.end(content);
+            // Cache Policy
+            const isHtml = ext === '.html' || contentType === 'text/html';
+            const cacheControl = isHtml ? 'public, max-age=0, must-revalidate' : 'public, max-age=86400';
+            const lastModified = stats.mtime.toUTCString();
+
+            // Handle Conditional GET (304 Not Modified)
+            const ifModifiedSince = req.headers['if-modified-since'];
+            if (ifModifiedSince === lastModified) {
+                res.writeHead(304, {
+                    'Content-Type': contentType,
+                    'Cache-Control': cacheControl,
+                    'Last-Modified': lastModified
+                });
+                res.end();
+                return;
+            }
+
+            fs.readFile(filePath, (readErr, content) => {
+                if (readErr) {
+                    res.writeHead(500);
+                    res.end(`Server Error: ${readErr.code}`);
+                } else {
+                    res.writeHead(200, {
+                        'Content-Type': contentType,
+                        'Cache-Control': cacheControl,
+                        'Last-Modified': lastModified
+                    });
+                    res.end(content);
+                }
+            });
         }
     });
 });

@@ -12,6 +12,21 @@ const { exec } = require('child_process');
 
 const PORT = 3000;
 
+// Load API Key at startup
+let SERVER_API_KEY = process.env.LTA_API_KEY;
+if (!SERVER_API_KEY && fs.existsSync('.env')) {
+    try {
+        const envFile = fs.readFileSync('.env', 'utf8');
+        const match = envFile.match(/LTA_API_KEY=(.*)/);
+        if (match && match[1]) {
+            SERVER_API_KEY = match[1].trim();
+            console.log('Loaded API Key from .env file');
+        }
+    } catch (e) {
+        console.error('Error reading .env file:', e);
+    }
+}
+
 // MIME types for serving static files
 const mimeTypes = {
     '.html': 'text/html',
@@ -57,25 +72,7 @@ const server = http.createServer((req, res) => {
         const serviceNo = params.ServiceNo || '';
 
         // Check for client-provided API key in headers FIRST
-        let apiKey = req.headers['accountkey'];
-
-        if (!apiKey) {
-            // Fall back to environment or .env file
-            apiKey = process.env.LTA_API_KEY;
-
-            // Simple manual .env parser if not in process.env
-            if (!apiKey && fs.existsSync('.env')) {
-                try {
-                    const envFile = fs.readFileSync('.env', 'utf8');
-                    const match = envFile.match(/LTA_API_KEY=(.*)/);
-                    if (match && match[1]) {
-                        apiKey = match[1].trim();
-                    }
-                } catch (e) {
-                    console.error('Error reading .env file:', e);
-                }
-            }
-        }
+        let apiKey = req.headers['accountkey'] || SERVER_API_KEY;
 
         const maskedKey = apiKey ? `${apiKey.substring(0, 4)}...${apiKey.substring(apiKey.length - 4)}` : 'None';
         const isClientProvided = !!req.headers['accountkey'];
@@ -158,25 +155,7 @@ const server = http.createServer((req, res) => {
         console.log('  -> Handling bus stops API request');
 
         // Check for client-provided API key in headers FIRST
-        let apiKey = req.headers['accountkey'];
-
-        if (!apiKey) {
-            // Fall back to environment or .env file
-            apiKey = process.env.LTA_API_KEY;
-
-            // Simple manual .env parser if not in process.env
-            if (!apiKey && fs.existsSync('.env')) {
-                try {
-                    const envFile = fs.readFileSync('.env', 'utf8');
-                    const match = envFile.match(/LTA_API_KEY=(.*)/);
-                    if (match && match[1]) {
-                        apiKey = match[1].trim();
-                    }
-                } catch (e) {
-                    console.error('Error reading .env file:', e);
-                }
-            }
-        }
+        let apiKey = req.headers['accountkey'] || SERVER_API_KEY;
 
         if (!apiKey) {
             res.writeHead(500, {

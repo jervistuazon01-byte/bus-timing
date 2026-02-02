@@ -909,7 +909,9 @@ body {
 
 .fav-info-group {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
 }
 
 .fav-service {
@@ -920,10 +922,10 @@ body {
 }
 
 .fav-eta {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-muted);
-    margin-top: 4px;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-top: 2px;
 }
 
 .fav-timing {

@@ -907,11 +907,23 @@ body {
     margin-bottom: 4px;
 }
 
+.fav-info-group {
+    display: flex;
+    flex-direction: column;
+}
+
 .fav-service {
     font-size: 28px;
     font-weight: 800;
     color: var(--accent);
     line-height: 1;
+}
+
+.fav-eta {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-top: 4px;
 }
 
 .fav-timing {

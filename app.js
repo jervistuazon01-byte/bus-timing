@@ -438,9 +438,15 @@ class BusTimingApp {
             // Format timings: "Arr, 12, 25"
             let timingsHtml = '--';
             let crowdClass = '';
+            let firstBusEta = '';
 
             if (buses.length > 0) {
                 const timings = buses.map(b => LTA_API.parseArrivalTime(b.EstimatedArrival));
+
+                // Get ETA for first bus
+                if (buses[0] && buses[0].EstimatedArrival) {
+                    firstBusEta = LTA_API.formatTime(buses[0].EstimatedArrival);
+                }
 
                 timingsHtml = timings.map((t, index) => {
                     if (index > 2) return ''; // Only show first 3
@@ -463,7 +469,10 @@ class BusTimingApp {
                 <div class="favorite-card animate-in" onclick="app.openFavorite('${fav.stopCode}', '${fav.serviceNo}')" style="animation-delay: ${index * 0.05}s">
                     <button class="remove-fav-btn" onclick="app.removeFavorite('${fav.stopCode}', '${fav.serviceNo}', event)">✕</button>
                     <div class="fav-main">
-                        <div class="fav-service">${fav.serviceNo}</div>
+                        <div class="fav-info-group">
+                            <div class="fav-service">${fav.serviceNo}</div>
+                            ${firstBusEta ? `<div class="fav-eta">ETA ${firstBusEta}</div>` : ''}
+                        </div>
                         <div class="fav-timings-group">
                             ${timingsHtml}
                             <span class="min-label">min</span>

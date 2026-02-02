@@ -720,6 +720,7 @@ class BusTimingApp {
         } else {
             this.elements.arrivalsList.innerHTML = arrivals.map(({ data, label }, index) => {
                 const arrivalTime = LTA_API.parseArrivalTime(data.EstimatedArrival);
+                const formattedTime = LTA_API.formatTime(data.EstimatedArrival);
                 const crowd = LTA_API.getCrowdInfo(data.Load);
                 const busType = LTA_API.getBusType(data.Type);
                 const isArriving = arrivalTime === 'Arr';
@@ -728,7 +729,13 @@ class BusTimingApp {
                     <div class="arrival-card animate-in" style="animation-delay: ${index * 0.1}s">
                         <div class="arrival-info">
                             <span class="arrival-label">${label}</span>
-                            <span class="arrival-time ${isArriving ? 'arriving' : ''}">${arrivalTime}</span>
+                            <div class="arrival-timing-group">
+                                <div class="arrival-eta">
+                                    <span class="eta-label">ETA</span>
+                                    <span class="eta-time">${formattedTime}</span>
+                                </div>
+                                <span class="arrival-time ${isArriving ? 'arriving' : ''}">${arrivalTime}</span>
+                            </div>
                             <div class="arrival-meta">
                                 <span class="bus-type">${busType}</span>
                             </div>

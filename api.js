@@ -372,19 +372,42 @@ const LTA_API = {
         // We'll use simple pythagoras on lat/lon for speed as Singapore is small/near equator.
         // 1 deg lat ~ 111km. 1 deg lon at equator ~ 111km.
 
-        return stops.map(stop => {
+        // Optimization: Single pass selection of top 10 closest stops
+        const limit = 10;
+        const nearest = [];
+
+        for (let i = 0; i < stops.length; i++) {
+            const stop = stops[i];
             const dLat = (stop.Latitude - lat);
             const dLon = (stop.Longitude - lon);
             const distSq = dLat * dLat + dLon * dLon;
-            return { ...stop, distSq };
-        })
-            .sort((a, b) => a.distSq - b.distSq)
-            .slice(0, 10) // Get closest 10
-            .map(s => {
-                // Convert to approx meters
-                const distKm = Math.sqrt(s.distSq) * 111;
-                return { ...s, distance: Math.round(distKm * 1000) };
-            });
+
+            // If we have room or this is closer than the furthest current candidate
+            if (nearest.length < limit || distSq < nearest[nearest.length - 1].distSq) {
+                let inserted = false;
+                for (let j = 0; j < nearest.length; j++) {
+                    if (distSq < nearest[j].distSq) {
+                        nearest.splice(j, 0, { stop, distSq });
+                        inserted = true;
+                        break;
+                    }
+                }
+
+                if (!inserted) {
+                    nearest.push({ stop, distSq });
+                }
+
+                if (nearest.length > limit) {
+                    nearest.pop();
+                }
+            }
+        }
+
+        return nearest.map(item => {
+            // Convert to approx meters
+            const distKm = Math.sqrt(item.distSq) * 111;
+            return { ...item.stop, distSq: item.distSq, distance: Math.round(distKm * 1000) };
+        });
     }
 };
 

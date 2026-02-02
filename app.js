@@ -501,26 +501,32 @@ class BusTimingApp {
         });
 
         const newTimings = { ...(this.state.favTimings || {}) };
+        const stopCodes = Object.keys(stopGroups);
+        const chunkSize = 5;
 
-        for (const stopCode of Object.keys(stopGroups)) {
-            try {
-                const data = await LTA_API.getBusArrival(stopCode);
-                if (data && data.Services) {
-                    data.Services.forEach(s => {
-                        if (stopGroups[stopCode].includes(s.ServiceNo)) {
-                            // Store array of valid next buses
-                            const nextBuses = [];
-                            if (s.NextBus && s.NextBus.EstimatedArrival) nextBuses.push(s.NextBus);
-                            if (s.NextBus2 && s.NextBus2.EstimatedArrival) nextBuses.push(s.NextBus2);
-                            if (s.NextBus3 && s.NextBus3.EstimatedArrival) nextBuses.push(s.NextBus3);
+        for (let i = 0; i < stopCodes.length; i += chunkSize) {
+            const chunk = stopCodes.slice(i, i + chunkSize);
 
-                            newTimings[`${stopCode}_${s.ServiceNo}`] = nextBuses;
-                        }
-                    });
+            await Promise.all(chunk.map(async (stopCode) => {
+                try {
+                    const data = await LTA_API.getBusArrival(stopCode);
+                    if (data && data.Services) {
+                        data.Services.forEach(s => {
+                            if (stopGroups[stopCode].includes(s.ServiceNo)) {
+                                // Store array of valid next buses
+                                const nextBuses = [];
+                                if (s.NextBus && s.NextBus.EstimatedArrival) nextBuses.push(s.NextBus);
+                                if (s.NextBus2 && s.NextBus2.EstimatedArrival) nextBuses.push(s.NextBus2);
+                                if (s.NextBus3 && s.NextBus3.EstimatedArrival) nextBuses.push(s.NextBus3);
+
+                                newTimings[`${stopCode}_${s.ServiceNo}`] = nextBuses;
+                            }
+                        });
+                    }
+                } catch (err) {
+                    console.warn(`Failed to refresh fav timings for stop ${stopCode}:`, err);
                 }
-            } catch (err) {
-                console.warn(`Failed to refresh fav timings for stop ${stopCode}:`, err);
-            }
+            }));
         }
 
         this.state.favTimings = newTimings;

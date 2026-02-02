@@ -586,6 +586,36 @@ body {
     gap: 4px;
 }
 
+.arrival-timing-group {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.arrival-eta {
+    display: flex;
+    flex-direction: column;
+    padding-right: 16px;
+    border-right: 1px solid var(--border);
+}
+
+.eta-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+    line-height: 1.2;
+}
+
+.eta-time {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    white-space: nowrap;
+    line-height: 1.2;
+}
+
 .arrival-label {
     font-size: 14px;
     font-weight: 700;
@@ -877,11 +907,23 @@ body {
     margin-bottom: 4px;
 }
 
+.fav-info-group {
+    display: flex;
+    flex-direction: column;
+}
+
 .fav-service {
     font-size: 28px;
     font-weight: 800;
     color: var(--accent);
     line-height: 1;
+}
+
+.fav-eta {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-top: 4px;
 }
 
 .fav-timing {

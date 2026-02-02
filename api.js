@@ -222,6 +222,23 @@ const LTA_API = {
     },
 
     /**
+     * Format estimated arrival time to 12-hour format with AM/PM
+     * @param {string} estimatedArrival - ISO datetime string
+     */
+    formatTime(estimatedArrival) {
+        if (!estimatedArrival) {
+            return '--:--';
+        }
+
+        const date = new Date(estimatedArrival);
+        return date.toLocaleTimeString('en-SG', {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+        });
+    },
+
+    /**
      * Get crowd level description
      * SEA = Seats Available, SDA = Standing Available, LSD = Limited Standing
      */

@@ -320,7 +320,7 @@ const LTA_API = {
                 let pageData = await response.json();
 
                 if (pageData.value && pageData.value.length > 0) {
-                    allStops = [...allStops, ...pageData.value];
+                    allStops.push(...pageData.value);
                     skip += 500;
                     console.log(`Fetched ${allStops.length} stops...`);
                 } else {

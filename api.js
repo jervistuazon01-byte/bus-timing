@@ -37,14 +37,18 @@ const LTA_API = {
      */
     async request(endpoint, params = {}) {
         // Build the URL for the serverless function
-        let apiUrl = '/api/bus-arrival';
+        const apiUrl = endpoint || '/api/bus-arrival';
 
         // Append query parameters
         const queryParams = new URLSearchParams();
-        if (params.BusStopCode) queryParams.append('BusStopCode', params.BusStopCode);
-        if (params.ServiceNo) queryParams.append('ServiceNo', params.ServiceNo);
+        Object.entries(params).forEach(([key, value]) => {
+            if (value !== undefined && value !== null && value !== '') {
+                queryParams.append(key, value);
+            }
+        });
 
-        const fullUrl = `${apiUrl}?${queryParams.toString()}`;
+        const queryString = queryParams.toString();
+        const fullUrl = queryString ? `${apiUrl}?${queryString}` : apiUrl;
 
         console.log(`Calling API: ${fullUrl}`);
 
@@ -154,9 +158,10 @@ const LTA_API = {
     /**
      * Get bus arrival times - tries real API first, falls back to demo
      */
-    async getBusArrival(busStopCode, serviceNo = '') {
+    async getBusArrival(busStopCode, serviceNo = '', options = {}) {
+        const { allowDemoFallback = true } = options;
         try {
-            const data = await this.request('/v3/BusArrival', {
+            const data = await this.request('/api/bus-arrival', {
                 BusStopCode: busStopCode,
                 ServiceNo: serviceNo
             });
@@ -168,6 +173,9 @@ const LTA_API = {
             throw new Error('No services found');
         } catch (error) {
             console.log('API failed, using demo mode:', error.message);
+            if (!allowDemoFallback) {
+                throw error;
+            }
             // Return demo data with dynamic times
             return this.getDemoData(busStopCode);
         }
@@ -305,19 +313,8 @@ const LTA_API = {
         // Loop to fetch all pages (500 per page)
         while (hasMore) {
             try {
-                // Call our server proxy which handles the authentication
-                const data = await this.request('/v3/BusStops', { skip }); // Map to /api/bus-stops on server via request method adaptation needed or direct fetch? 
-
-                // Wait, our request() method hardcodes /api/bus-arrival. 
-                // We need to bypass or modify request() slightly, but for now let's use direct fetch to our new endpoint
-                // Actually, let's fix request() later? No, let's just do a direct fetch here to be safe and simple
-
                 // Calls local server endpoint
-                let response = await fetch(`/api/bus-stops?skip=${skip}`, {
-                    headers: { 'AccountKey': this.getApiKey() || '' }
-                });
-
-                let pageData = await response.json();
+                const pageData = await this.request('/api/bus-stops', { skip });
 
                 if (pageData.value && pageData.value.length > 0) {
                     allStops.push(...pageData.value);
@@ -328,7 +325,7 @@ const LTA_API = {
                 }
             } catch (err) {
                 console.error('Error fetching stops:', err);
-                hasMore = false;
+                throw new Error('Unable to load bus stop data. Please check your API key and server status.');
             }
         }
 

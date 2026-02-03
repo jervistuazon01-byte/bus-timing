@@ -76,7 +76,11 @@ class BusTimingApp {
         this.applyTheme(this.state.theme);
 
         // Pre-fetch bus stops (background)
-        setTimeout(() => LTA_API.getAllStops(), 1000);
+        setTimeout(() => {
+            LTA_API.getAllStops().catch((error) => {
+                console.warn('Failed to prefetch bus stops:', error);
+            });
+        }, 1000);
 
         // Load recent searches
         this.loadRecentSearches();
@@ -183,24 +187,18 @@ class BusTimingApp {
 
         try {
             // Test with a common bus stop (e.g., VivoCity: 14141 or similar, using 83139 from placeholder)
-            const data = await LTA_API.getBusArrival('83139');
+            await LTA_API.getBusArrival('83139', '', { allowDemoFallback: false });
 
-            if (data._isDemo) {
-                // Key failed
-                LTA_API.setApiKey(oldKey); // Revert
-                alert('Verification Failed: The API key seems invalid (Server returned Demo data). Please check your key.');
-            } else {
-                // Success
-                this.hideApiKeyModal();
-                alert('Success! API key verified and saved.');
+            // Success
+            this.hideApiKeyModal();
+            alert('Success! API key verified and saved.');
 
-                // Refresh if we have a current search
-                if (this.state.currentBusStop) {
-                    this.searchBusStop();
-                }
-                // Also refresh favorites
-                this.refreshFavoriteTimings();
+            // Refresh if we have a current search
+            if (this.state.currentBusStop) {
+                this.searchBusStop();
             }
+            // Also refresh favorites
+            this.refreshFavoriteTimings();
         } catch (err) {
             console.error(err);
             LTA_API.setApiKey(oldKey); // Revert
@@ -250,8 +248,13 @@ class BusTimingApp {
 
         // Debounce search (300ms)
         this.state.searchDebounce = setTimeout(async () => {
-            const results = await LTA_API.searchStops(query);
-            this.renderSearchResults(results);
+            try {
+                const results = await LTA_API.searchStops(query);
+                this.renderSearchResults(results);
+            } catch (error) {
+                console.error('Search error:', error);
+                this.renderSearchError(error.message || 'Unable to load bus stops');
+            }
         }, 300);
     }
 
@@ -277,7 +280,7 @@ class BusTimingApp {
                         </svg>`;
                 } catch (err) {
                     console.error(err);
-                    alert('Failed to find nearby stops');
+                    alert(err.message || 'Failed to find nearby stops');
                 }
             },
             (err) => {
@@ -319,6 +322,15 @@ class BusTimingApp {
             });
         }
 
+        this.elements.searchResults.classList.remove('hidden');
+    }
+
+    renderSearchError(message) {
+        this.elements.searchResults.innerHTML = `
+            <div class="search-result-item">
+                <span class="result-name">${message}</span>
+            </div>
+        `;
         this.elements.searchResults.classList.remove('hidden');
     }
 
@@ -651,6 +663,8 @@ class BusTimingApp {
         if (isDemo) {
             this.elements.autoRefreshStatus.textContent = '⚠️ Demo Mode - API key not yet activated';
             this.elements.autoRefreshStatus.style.color = 'var(--warning)';
+        } else {
+            this.elements.autoRefreshStatus.style.color = '';
         }
     }
 
@@ -820,6 +834,7 @@ class BusTimingApp {
         }, 30000);
 
         this.elements.autoRefreshStatus.textContent = 'Auto-refresh: ON (30s)';
+        this.elements.autoRefreshStatus.style.color = '';
     }
 
     stopAutoRefresh() {

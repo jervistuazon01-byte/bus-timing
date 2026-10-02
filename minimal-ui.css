@@ -1,0 +1,47 @@
+/* Minimal contemporary override */
+:root{
+  --bg-primary:#0f1115;--bg-secondary:#171a20;--bg-tertiary:#22262e;
+  --text-primary:#f5f7fa;--text-secondary:#b7bdc8;--text-muted:#7c8492;
+  --accent:#7c9bff;--accent-dark:#7c9bff;--accent-secondary:#7c9bff;
+  --accent-soft:rgba(124,155,255,.14);--border:transparent;--shadow:none;
+  --radius-lg:18px;--radius-md:14px;--radius-sm:10px
+}
+[data-theme="light"]{
+  --bg-primary:#f4f5f7;--bg-secondary:#fff;--bg-tertiary:#eceef2;
+  --text-primary:#14171c;--text-secondary:#4e5663;--text-muted:#7b8492;
+  --accent:#4d6fff;--accent-dark:#4d6fff;--accent-secondary:#4d6fff;
+  --accent-soft:rgba(77,111,255,.11);--border:transparent;--shadow:none
+}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg-primary)}
+.app{max-width:460px;background:var(--bg-primary);background-image:none;animation:none}
+.animate-in{opacity:1;animation:none}
+.header{padding:20px 20px 10px}.logo{font-size:24px;font-weight:700;letter-spacing:-.6px;color:var(--text-primary)}
+.header-actions{gap:8px}.header-btn,.btn-icon,.btn-pill{border:0;box-shadow:none;border-radius:12px;background:var(--bg-tertiary);color:var(--text-primary)}
+.header-btn{background:var(--bg-secondary);color:var(--text-secondary)}
+.header-btn:hover,.btn-icon:hover,.btn-pill:hover{background:var(--bg-tertiary);color:var(--text-primary);transform:none}
+.main{padding:0 20px 24px;gap:18px}
+.search-section,.stop-info,.arrival-card,.favorite-card,.modal-content{border:0;box-shadow:none}
+.search-section,.stop-info{padding:18px;border-radius:18px}
+.input{height:48px;padding:0 14px;border:0;border-radius:14px;background:var(--bg-tertiary);font-size:15px;font-weight:500}
+.input-large{font-size:16px;font-weight:600;letter-spacing:0}.input:focus{outline:0;border:0;background:var(--bg-tertiary);box-shadow:0 0 0 3px var(--accent-soft)}
+.search-container,.search-input-group{gap:10px}.search-section .btn-primary{margin-top:2px}
+.search-results{margin-top:0;border:0;border-radius:14px;box-shadow:none;background:var(--bg-secondary)}
+.search-result-item{padding:14px;border:0}.search-result-item:hover,.result-code{background:var(--bg-tertiary)}
+.btn{height:48px;border-radius:14px;font-size:15px;font-weight:600}.btn-primary{background:var(--accent);color:#fff}
+.btn-icon{width:48px;height:48px}.btn-pill{width:40px;height:40px}.btn-ghost,.btn-ghost-sm{color:var(--text-muted)}
+.recent-searches{gap:8px;margin-top:12px}.recent-chip{height:34px;padding:0 12px;border:0;border-radius:10px;background:var(--bg-tertiary);font-size:13px}
+.recent-chip:hover{border:0;background:var(--bg-secondary);color:var(--text-primary)}
+.section-label{margin-bottom:10px;color:var(--text-muted);font-size:13px;font-weight:600}
+.services-grid{gap:8px}.service-btn{height:40px;min-width:52px;padding:0 14px;border:0;border-radius:12px;background:var(--bg-secondary);color:var(--text-secondary);font-size:15px}
+.service-btn:hover{border:0;background:var(--bg-tertiary)}.service-btn.active{border:0;box-shadow:none;background:var(--accent);color:#fff;transform:none}
+.selected-bus .bus-number{font-size:28px;color:var(--text-primary)}.last-updated{margin-bottom:12px;font-size:12px}
+.arrivals-list{gap:10px}.arrival-card{padding:18px;border-radius:16px}.arrival-timing-group{gap:12px}
+.arrival-eta{padding-right:0;border-right:0}.eta-label{font-size:10px;font-weight:600}.eta-time{font-size:16px;font-weight:650}
+.arrival-label{font-size:12px;font-weight:600}.arrival-time{font-size:32px;color:var(--text-primary)}.arrival-time.arriving{color:var(--accent)}
+.bus-type{font-size:12px;font-weight:500}.crowd-indicator{min-width:52px;padding:0;gap:5px;background:transparent}.crowd-label{font-size:10px;color:var(--text-muted)}
+.favorites-section{margin-bottom:4px}.favorites-grid{gap:10px}.favorite-card{padding:16px;border:0;border-radius:16px;background:var(--bg-secondary)}
+.favorite-card:hover{border-color:transparent;background:var(--bg-tertiary);transform:none}.favorite-card:active{transform:none}
+.fav-service{color:var(--text-primary)}.fav-eta{color:var(--text-secondary);font-size:13px}.fav-timings-group{color:var(--text-primary)}
+.divider,.min-label,.fav-stop{color:var(--text-muted)}.remove-fav-btn{background:transparent;color:var(--text-muted)}
+.btn-heart:hover{background:var(--bg-tertiary);color:var(--accent)}.btn-heart.active{color:var(--accent)}
+.modal{background:rgba(0,0,0,.56);backdrop-filter:blur(8px)}.footer{border:0;background:transparent;color:var(--text-muted)}

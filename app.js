@@ -483,10 +483,7 @@ class BusTimingApp {
                         <div class="fav-timings-group">
                             ${timingsHtml}
                         </div>
-                    </div>
-                    <div class="fav-footer">
-                        <span class="fav-footer-label">min · local time</span>
-                        ${crowdClass ? `<span class="crowd-dot-sm ${crowdClass}"></span>` : ''}
+                        ${crowdClass ? `<span class="crowd-dot-sm fav-crowd-dot ${crowdClass}" aria-label="Crowd level"></span>` : ''}
                     </div>
                 </div>
             `;

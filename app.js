@@ -447,28 +447,23 @@ class BusTimingApp {
         this.elements.favoritesGrid.innerHTML = sortedFavs.map((fav, index) => {
             const buses = (this.state.favTimings || {})[`${fav.stopCode}_${fav.serviceNo}`] || [];
 
-            // Format timings: "Arr, 12, 25"
-            let timingsHtml = '--';
+            let timingsHtml = '<span class="fav-empty">--</span>';
             let crowdClass = '';
-            let firstBusEta = '';
 
             if (buses.length > 0) {
-                const timings = buses.map(b => LTA_API.parseArrivalTime(b.EstimatedArrival));
+                timingsHtml = buses.slice(0, 3).map(bus => {
+                    const arrival = LTA_API.parseArrivalTime(bus.EstimatedArrival) || '--';
+                    const minutes = arrival.replace(' min', '');
+                    const clockTime = LTA_API.formatTime(bus.EstimatedArrival);
+                    const isArriving = arrival === 'Arr';
 
-                // Get ETA for first bus
-                if (buses[0] && buses[0].EstimatedArrival) {
-                    firstBusEta = LTA_API.formatTime(buses[0].EstimatedArrival);
-                }
-
-                timingsHtml = timings.map((t, index) => {
-                    if (index > 2) return ''; // Only show first 3
-
-                    const isArr = t === 'Arr';
-                    // Strip ' min' if present so we don't duplicate it
-                    const timeOnly = t.replace(' min', '');
-
-                    return `<span class="${isArr ? 'text-accent' : ''}">${timeOnly}</span>`;
-                }).join('<span class="divider">, </span>');
+                    return `
+                        <span class="fav-timing-item">
+                            <span class="fav-minutes ${isArriving ? 'arriving' : ''}">${minutes}</span>
+                            <span class="fav-clock">${clockTime}</span>
+                        </span>
+                    `;
+                }).join('');
 
                 // Use the crowd info of the first bus for the indicator
                 if (buses[0].Load) {
@@ -483,15 +478,14 @@ class BusTimingApp {
                     <div class="fav-main">
                         <div class="fav-info-group">
                             <div class="fav-service">${fav.serviceNo}</div>
-                            ${firstBusEta ? `<div class="fav-eta">ETA ${firstBusEta}</div>` : ''}
+                            <div class="fav-stop">Stop ${fav.stopCode}</div>
                         </div>
                         <div class="fav-timings-group">
                             ${timingsHtml}
-                            <span class="min-label">min</span>
                         </div>
                     </div>
                     <div class="fav-footer">
-                        <div class="fav-stop">Stop ${fav.stopCode}</div>
+                        <span class="fav-footer-label">min · local time</span>
                         ${crowdClass ? `<span class="crowd-dot-sm ${crowdClass}"></span>` : ''}
                     </div>
                 </div>
@@ -899,7 +893,7 @@ class BusTimingApp {
 // Initialize app when DOM is ready
 // Initialize app when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('SG Bus App v3.0 Loaded'); // Version Check
+    console.log('SG Bus App v3.1 Loaded'); // Version Check
     window.app = new BusTimingApp();
 
 

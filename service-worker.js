@@ -1,10 +1,10 @@
-const CACHE_NAME = 'sg-bus-v5';
+const CACHE_NAME = 'sg-bus-v6';
 const ASSETS = [
     './',
     './index.html',
     './style.css?v=3',
-    './minimal-ui.css?v=1',
-    './app.js?v=3',
+    './minimal-ui.css?v=2',
+    './app.js?v=4',
     './api.js?v=3',
     './icon.png',
     './manifest.json'

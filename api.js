@@ -156,29 +156,13 @@ const LTA_API = {
     },
 
     /**
-     * Get bus arrival times - tries real API first, falls back to demo
+     * Get live bus arrivals. Demo requires an explicit choice.
      */
     async getBusArrival(busStopCode, serviceNo = '', options = {}) {
-        const { allowDemoFallback = true } = options;
-        try {
-            const data = await this.request('/api/bus-arrival', {
-                BusStopCode: busStopCode,
-                ServiceNo: serviceNo
-            });
-
-            // Check if we got valid data
-            if (data && data.Services && data.Services.length > 0) {
-                return data;
-            }
-            throw new Error('No services found');
-        } catch (error) {
-            console.log('API failed, using demo mode:', error.message);
-            if (!allowDemoFallback) {
-                throw error;
-            }
-            // Return demo data with dynamic times
-            return this.getDemoData(busStopCode);
-        }
+        if (options.demo === true || (options.demo !== false && this.demoMode === true)) return this.getDemoData(busStopCode);
+        const data = await this.request('/api/bus-arrival', { BusStopCode: busStopCode, ServiceNo: serviceNo });
+        if (!data || !Array.isArray(data.Services)) throw new Error('Invalid live arrival response');
+        return { ...data, _isDemo: false, _updatedAt: Date.now() };
     },
 
     /**
@@ -189,6 +173,7 @@ const LTA_API = {
         const now = Date.now();
         const demo = JSON.parse(JSON.stringify(this.demoData));
         demo.BusStopCode = busStopCode;
+        demo._updatedAt = now;
         demo._isDemo = true; // Flag to show demo indicator
 
         demo.Services.forEach((service, i) => {

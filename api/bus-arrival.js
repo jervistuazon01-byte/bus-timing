@@ -10,6 +10,14 @@ module.exports = function handler(req, res) {
         'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
     );
 
+    // Bus arrivals are real-time data. Never allow browsers, proxies, or Vercel's CDN
+    // to reuse an old response, otherwise expired ETAs can appear as "Arr" on reopen.
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0, s-maxage=0');
+    res.setHeader('CDN-Cache-Control', 'no-store');
+    res.setHeader('Vercel-CDN-Cache-Control', 'no-store');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+
     // Handle OPTIONS request
     if (req.method === 'OPTIONS') {
         res.status(200).end();

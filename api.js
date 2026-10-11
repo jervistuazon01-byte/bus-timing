@@ -47,6 +47,12 @@ const LTA_API = {
             }
         });
 
+        // Bus arrivals are real-time. Give every request a unique URL so no browser,
+        // proxy, or intermediary can accidentally reuse an expired ETA response.
+        if (apiUrl === '/api/bus-arrival') {
+            queryParams.set('_ts', Date.now().toString());
+        }
+
         const queryString = queryParams.toString();
         const fullUrl = queryString ? `${apiUrl}?${queryString}` : apiUrl;
 
@@ -65,7 +71,8 @@ const LTA_API = {
         try {
             const response = await fetch(fullUrl, {
                 method: 'GET',
-                headers: headers
+                headers: headers,
+                cache: 'no-store'
             });
 
             if (!response.ok) {
@@ -410,3 +417,37 @@ const LTA_API = {
 
 // Export for use in app.js
 window.LTA_API = LTA_API;
+
+// Mobile browsers/PWAs can suspend JavaScript timers while the app is in the
+// background. When the app becomes active again, immediately replace any old
+// ETAs instead of leaving an expired timestamp showing as "Arr" until the next
+// 30-second interval or a manual page refresh.
+let lastLiveResumeRefresh = 0;
+function refreshLiveDataOnResume() {
+    if (document.visibilityState === 'hidden' || !window.app) return;
+
+    const now = Date.now();
+    if (now - lastLiveResumeRefresh < 1500) return;
+    lastLiveResumeRefresh = now;
+
+    if (window.app.state?.currentBusStop && window.app.state?.currentService) {
+        window.app.refreshArrivals().catch((error) => {
+            console.warn('Resume arrival refresh failed:', error);
+        });
+    }
+
+    if (window.app.state?.favorites?.length > 0) {
+        window.app.refreshFavoriteTimings().catch((error) => {
+            console.warn('Resume favorites refresh failed:', error);
+        });
+    }
+}
+
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+        refreshLiveDataOnResume();
+    }
+});
+window.addEventListener('pageshow', refreshLiveDataOnResume);
+window.addEventListener('focus', refreshLiveDataOnResume);
+window.addEventListener('online', refreshLiveDataOnResume);

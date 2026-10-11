@@ -6,7 +6,11 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node --test",
+    "build": "node scripts/build.cjs",
+    "prestart": "npm run build",
+    "predev": "npm run build",
+    "test:deployment": "node scripts/check-deployment.cjs"
   },
   "keywords": [
     "singapore",

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sg-bus-v7';
+const CACHE_NAME = 'sg-bus-v8';
 const ASSETS = [
     './',
     './index.html',

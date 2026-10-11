@@ -19,6 +19,8 @@ if %ERRORLEVEL% neq 0 (
 :: Start the server
 echo Starting SG Bus Timing...
 echo.
+call npm run build
+if %ERRORLEVEL% neq 0 exit /b 1
 node server.js
 
 pause

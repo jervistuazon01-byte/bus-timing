@@ -85,6 +85,17 @@ class BusTimingApp {
         // Load recent searches
         this.loadRecentSearches();
 
+        const demoToggle = document.getElementById('demoMode');
+        demoToggle.addEventListener('change', () => {
+            LTA_API.demoMode = demoToggle.checked;
+            this.state.favTimings = {};
+            this.state.favStatus = {};
+            this.state.services = [];
+            this.stopAutoRefresh();
+            this.hideSections();
+            if (this.state.currentBusStop) this.searchBusStop();
+            this.refreshFavoriteTimings();
+        });
         // Load favorites
         this.loadFavorites();
 
@@ -187,7 +198,7 @@ class BusTimingApp {
 
         try {
             // Test with a common bus stop (e.g., VivoCity: 14141 or similar, using 83139 from placeholder)
-            await LTA_API.getBusArrival('83139', '', { allowDemoFallback: false });
+            await LTA_API.getBusArrival('83139', '', { demo: false });
 
             // Success
             this.hideApiKeyModal();
@@ -216,7 +227,7 @@ class BusTimingApp {
     }
 
     clearApiKey() {
-        if (confirm('Clear your API key? The app will revert to Demo Mode.')) {
+        if (confirm('Clear your API key? Live data will use the server key if configured.')) {
             LTA_API.setApiKey(null);
             this.elements.apiKeyInput.value = '';
             this.hideApiKeyModal();
@@ -447,7 +458,9 @@ class BusTimingApp {
         this.elements.favoritesGrid.innerHTML = sortedFavs.map((fav, index) => {
             const buses = (this.state.favTimings || {})[`${fav.stopCode}_${fav.serviceNo}`] || [];
 
-            let timingsHtml = '<span class="fav-empty">--</span>';
+            const status = this.state.favStatus?.[`${fav.stopCode}_${fav.serviceNo}`];
+            const statusText = status ? status.source + (status.updatedAt ? ' | Updated ' + new Date(status.updatedAt).toLocaleTimeString('en-SG') : '') : 'Unavailable';
+            let timingsHtml = '<span class="fav-empty">No arrivals</span>';
             let crowdClass = '';
 
             if (buses.length > 0) {
@@ -478,7 +491,7 @@ class BusTimingApp {
                     <div class="fav-main">
                         <div class="fav-info-group">
                             <div class="fav-service">${fav.serviceNo}</div>
-                            <div class="fav-stop">Stop ${fav.stopCode}</div>
+                            <div class="fav-stop">Stop ${fav.stopCode}</div><small>${statusText}</small>
                         </div>
                         <div class="fav-timings-group">
                             ${timingsHtml}
@@ -503,6 +516,7 @@ class BusTimingApp {
             stopGroups[f.stopCode].push(f.serviceNo);
         });
 
+        this.state.favStatus ||= {};
         const newTimings = { ...(this.state.favTimings || {}) };
         const stopCodes = Object.keys(stopGroups);
         const chunkSize = 5;
@@ -513,6 +527,10 @@ class BusTimingApp {
             await Promise.all(chunk.map(async (stopCode) => {
                 try {
                     const data = await LTA_API.getBusArrival(stopCode);
+                    for (const serviceNo of stopGroups[stopCode]) {
+                        newTimings[stopCode + '_' + serviceNo] = [];
+                        this.state.favStatus[stopCode + '_' + serviceNo] = { source: data._isDemo ? 'Demo — simulated' : 'Live', updatedAt: data._updatedAt };
+                    }
                     if (data && data.Services) {
                         data.Services.forEach(s => {
                             if (stopGroups[stopCode].includes(s.ServiceNo)) {
@@ -527,6 +545,11 @@ class BusTimingApp {
                         });
                     }
                 } catch (err) {
+                    for (const serviceNo of stopGroups[stopCode]) {
+                        const key = stopCode + '_' + serviceNo;
+                        newTimings[key] = [];
+                        this.state.favStatus[key] = { ...(this.state.favStatus[key] || {}), source: 'Unavailable — refresh failed' };
+                    }
                     console.warn(`Failed to refresh fav timings for stop ${stopCode}:`, err);
                 }
             }));
@@ -619,11 +642,6 @@ class BusTimingApp {
         try {
             const data = await LTA_API.getBusArrival(busStopCode);
 
-            if (!data.Services || data.Services.length === 0) {
-                this.showError('No bus services found for this stop. Please check the bus stop code.');
-                return;
-            }
-
             // Save to recent searches
             this.saveRecentSearch(busStopCode);
 
@@ -631,11 +649,15 @@ class BusTimingApp {
             this.state.currentBusStop = busStopCode;
             this.state.services = data.Services;
             this.state.isDemo = data._isDemo || false;
+            this.state.updatedAt = data._updatedAt;
+            this.state.stale = false;
 
             // Show results
             this.hideLoading();
             this.showStopInfo(busStopCode, data._isDemo);
             this.showServices(data.Services);
+            this.updateTimestamp();
+            if (!data.Services.length) this.showError('Live response: no services currently available at this stop.');
 
         } catch (error) {
             console.error('Search error:', error);
@@ -646,16 +668,17 @@ class BusTimingApp {
     showStopInfo(busStopCode, isDemo = false) {
         this.elements.stopName.textContent = isDemo ? '⚠️ DEMO MODE' : 'Bus Stop';
         this.elements.stopCode.textContent = isDemo
-            ? `Stop Code: ${busStopCode} (API not active yet)`
+            ? `Stop Code: ${busStopCode} (simulated data)`
             : `Stop Code: ${busStopCode}`;
         this.elements.stopInfo.classList.remove('hidden');
 
         // Update footer to show demo status
         if (isDemo) {
-            this.elements.autoRefreshStatus.textContent = '⚠️ Demo Mode - API key not yet activated';
+            this.elements.autoRefreshStatus.textContent = 'Demo mode — simulated arrivals';
             this.elements.autoRefreshStatus.style.color = 'var(--warning)';
         } else {
             this.elements.autoRefreshStatus.style.color = '';
+            this.elements.autoRefreshStatus.textContent = 'Live data';
         }
     }
 
@@ -777,13 +800,17 @@ class BusTimingApp {
     }
 
     updateTimestamp() {
-        const now = new Date();
+        if (!Number.isFinite(this.state.updatedAt)) {
+            this.elements.lastUpdated.textContent = 'Unavailable — no successful update';
+            return;
+        }
+        const now = new Date(this.state.updatedAt);
         const timeStr = now.toLocaleTimeString('en-SG', {
             hour: '2-digit',
             minute: '2-digit',
             second: '2-digit'
         });
-        this.elements.lastUpdated.textContent = `Last updated: ${timeStr}`;
+        this.elements.lastUpdated.textContent = `${this.state.stale ? 'Stale — refresh failed' : this.state.isDemo ? 'Demo — simulated' : 'Live'} | Last updated: ${timeStr}`;
     }
 
     async refreshArrivals() {
@@ -795,11 +822,17 @@ class BusTimingApp {
 
             const data = await LTA_API.getBusArrival(this.state.currentBusStop, this.state.currentService);
 
-            if (data.Services && data.Services.length > 0) {
-                this.state.services = data.Services;
-                await this.showArrivals(this.state.currentService);
+            this.state.services = data.Services;
+            this.state.isDemo = !!data._isDemo;
+            this.state.updatedAt = data._updatedAt;
+            this.state.stale = false;
+            this.showStopInfo(this.state.currentBusStop, this.state.isDemo);
+            const service = data.Services.find(s => s.ServiceNo === this.state.currentService);
+            if (service) await this.showArrivals(this.state.currentService);
+            else {
+                this.elements.arrivalsList.textContent = 'No arrivals currently available for this service.';
+                this.updateTimestamp();
             }
-
             // Remove spin animation
             setTimeout(() => {
                 this.elements.refreshBtn.querySelector('svg').style.animation = '';
@@ -807,7 +840,10 @@ class BusTimingApp {
 
         } catch (error) {
             console.error('Refresh error:', error);
-            // Don't show error on auto-refresh failures
+            this.state.stale = true;
+            this.updateTimestamp();
+            this.elements.refreshBtn.querySelector('svg').style.animation = '';
+            this.elements.arrivalsList.textContent = 'Live arrivals unavailable. Last successful update shown above.';
         }
     }
 
